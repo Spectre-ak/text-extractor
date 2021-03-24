@@ -1,0 +1,367 @@
+<script type="text/javascript" src="Readability.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script>
+	function inputChanged(){
+		if(document.getElementById("customRadioInline1").checked==true){
+			document.getElementById("info").innerHTML="<p><p>Default works using java's URL and InputStream library, which extracts the page source and converts it into a DOM object using DOMParser() in javascript. After that the object is parsed into the <i>Mozilla's Readability</i> library to get the readable text content.</p></p>";
+			document.getElementById("chromeHeadlessExtrcater").style.display="none";
+			if(document.getElementById("customRadioInline12").checked==false &&
+				document.getElementById("customRadioInline22").checked==false)
+				document.getElementById("customRadioInline12").checked=true;
+		}
+		else if(document.getElementById("customRadioInline2").checked==true){
+			document.getElementById("info").innerHTML="<p><p>jsoup library provides both DOM and as well as text extracter. We can extract text in two ways either by parsing the extracted DOM in the <i>Mozilla's Readability</i> or by using the jsoup text extracter itself.</p></p>";
+			document.getElementById("chromeHeadlessExtrcater").style.display="none";
+			if(document.getElementById("customRadioInline12").checked==false &&
+				document.getElementById("customRadioInline22").checked==false)
+				document.getElementById("customRadioInline12").checked=true;
+		}
+		else{
+			document.getElementById("info").innerHTML="<p><p>Chrome headless is way of using chrome without an UI.</p></p>";
+			console.log();
+			document.getElementById("chromeHeadlessExtrcater").style=document.getElementById("customRadioInline12").style;
+		}
+	}
+
+	function ajaxRequest(_url,parser,usage){
+		var fd=new FormData();
+		fd.append("parser",parser);
+		fd.append("url",document.getElementById("urlInput").value);
+		$.ajax({
+		    url: _url,
+		    type: 'post',
+		    data:fd,
+		    contentType: false,
+		    processData: false,
+		    success: function(response){
+				//console.log(response);
+				if(parser=="headless" || parser=="jsoup"){
+					document.getElementById("textExtracted").innerHTML=response;
+				}
+				else{
+					var doc = new DOMParser().parseFromString(response, "text/html");
+					var article = new Readability(doc).parse();
+					if(article==null){
+						//console.log(response);
+						document.getElementById("textExtracted").innerHTML="<i>Unable to parse the data. Check source on console output.</i>"
+					}
+					else{
+						document.getElementById("textExtracted").innerHTML=article.textContent;
+					}
+				}
+				if(usage=="url")
+					document.getElementById(usage).innerHTML="Extract using url";
+				else
+					document.getElementById(usage).innerHTML="Extract using src";
+			},
+		});
+	}
+	function SourceAjaxRequest(_url,usage){
+		var fd=new FormData();
+		fd.append("src",document.getElementById("srcInput").value);
+		$.ajax({
+		    url: _url,
+		    type: 'post',
+		    data:fd,
+		    contentType: false,
+		    processData: false,
+		    success: function(response){
+				//console.log(response);
+				document.getElementById("textExtracted").innerHTML=response;
+				if(usage=="url")
+					document.getElementById(usage).innerHTML="Extract using url";
+				else
+					document.getElementById(usage).innerHTML="Extract using src";
+			},
+		});
+	}
+
+	function srcParserMozilla(src,usage) {
+		var doc = new DOMParser().parseFromString(src, "text/html");
+		var article = new Readability(doc).parse();
+		if(article==null){
+			//console.log(src);
+			document.getElementById("textExtracted").innerHTML="<i>Unable to parse the data. Check source on console output.</i>"
+		}
+		else{
+			document.getElementById("textExtracted").innerHTML=article.textContent;
+		}
+		if(usage=="url")
+			document.getElementById(usage).innerHTML="Extract using url";
+		else
+			document.getElementById(usage).innerHTML="Extract using src";
+	}
+
+	function extractText(usage){
+		var url;
+		if(usage=="url")
+			url=true;
+		else
+			url=false;
+
+		if(url && document.getElementById("urlInput").value=="")
+			return;
+		if(!url && document.getElementById("srcInput").value=="")
+			return;
+
+		document.getElementById(usage).innerHTML="<div class='loaderSmall'></div>";
+
+		if(document.getElementById("customRadioInline1").checked==true){
+			//default
+			if(document.getElementById("customRadioInline12").checked==true){
+				//mozilla's readability
+				if(url){
+					ajaxRequest("/default","mozilla",usage);
+				}
+				else{
+					srcParserMozilla(document.getElementById("srcInput").value,usage);
+				}
+			}
+			else{
+				//jsoup text extracter
+				if(url){
+					ajaxRequest("/default","jsoup",usage);
+				}
+				else{
+					SourceAjaxRequest("/jsoupSrcToText",usage);
+				}
+			}
+		}
+		else if(document.getElementById("customRadioInline2").checked==true){
+			//jsoup
+			if(document.getElementById("customRadioInline12").checked==true){
+				//mozilla's readability
+				if(url){
+					ajaxRequest("/jsoup","mozilla",usage);
+				}
+				else{
+					srcParserMozilla(document.getElementById("srcInput").value,usage);
+				}
+			}
+			else{
+				//jsoup text extracter
+				if(url){
+					ajaxRequest("/jsoup","jsoup",usage);
+				}
+				else{
+					SourceAjaxRequest("/jsoupSrcToText",usage);
+				}
+			}	
+		}
+		else{
+			//chrome headless
+			if(document.getElementById("customRadioInline12").checked==true){
+				//mozilla's readability
+				if(url){
+					ajaxRequest("/chromeHeadless","mozilla",usage);
+				}
+				else{
+					srcParserMozilla(document.getElementById("srcInput").value,usage);
+				}
+			}
+			else if(document.getElementById("customRadioInline22").checked==true){
+				//jsoup text extracter
+				if(url){
+					ajaxRequest("/chromeHeadless","jsoup",usage);
+				}
+				else{
+					SourceAjaxRequest("/jsoupSrcToText",usage);
+				}
+			}
+			else{
+				//chrome headless text extrcater
+				if(url){
+					ajaxRequest("/chromeHeadless","headless",usage);
+				}
+				else{
+					SourceAjaxRequest("/jsoupSrcToText",usage);
+				}
+			}
+		}
+	}
+
+
+
+	/*var xmlString = "<div id='foo'>  <a href='#'>Link</a><span>lklk</span></div>";
+	var doc = new DOMParser().parseFromString(xmlString, "text/html");
+
+	console.log(document);
+	console.log(doc);
+	var article = new Readability(doc).parse();
+	console.log(article);
+	console.log(article.title);
+	console.log(article.byline);*/
+/*
+	$.ajax({
+	  url: 'http://localhost:8080/getHtml',
+	    //url: 'http://localhost:8080/checkCookieSettings',
+	    type: 'get',
+	    contentType: false,
+	    processData: false,
+	    success: function(response){
+			console.log(response);
+			var doc = new DOMParser().parseFromString(response, "text/html");
+			var article = new Readability(doc).parse();
+			console.log(article.title);
+			console.log(article.textContent)
+		},
+	});*/
+
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+<link rel="shortcut icon" id="iconID" contenteditable="false" href="logo.png">
+
+    <title>Text Extracter</title>
+  </head>
+  <body style="background-color: #131316;color: white">
+    
+  	<div id="root"  class="container">
+  		<h1>Text Extracter</h1>
+  		<a href="https://github.com/Spectre-ak/text-extracter">Github</a>
+  			 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+			  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+			</svg><br><br>
+  		<p>Source Extracter</p>
+
+  		<div class="custom-control custom-radio custom-control-inline">
+		  <input type="radio" id="customRadioInline1" name="customRadioInline1" class="custom-control-input" checked="true" onchange="inputChanged();" >
+		  <label class="custom-control-label" for="customRadioInline1">Default</label>
+		</div>
+
+		<div class="custom-control custom-radio custom-control-inline">
+		  <input type="radio" id="customRadioInline2" name="customRadioInline1" class="custom-control-input" onchange="inputChanged();">
+		  <label class="custom-control-label" for="customRadioInline2">jsoup</label>
+		</div>
+
+		<div class="custom-control custom-radio custom-control-inline">
+		  <input type="radio" id="customRadioInline3" name="customRadioInline1" class="custom-control-input" onchange="inputChanged();">
+		  <label class="custom-control-label" for="customRadioInline3">Chrome headless</label>
+		</div>
+		<br>
+		<div id="info">
+			<p><p>Default works using java's URL and InputStream library, which extracts the page source and converts it into a DOM object using DOMParser() in javascript. After that the object is parsed into the <i>Mozilla's Readability</i> library to get the readable text content.</p></p>
+		</div>
+		<p>HTML parser</p>
+		
+  			<div class="custom-control custom-radio custom-control-inline">
+			  <input type="radio" id="customRadioInline12" name="customRadioInline12" class="custom-control-input" checked="true" onchange="inputChanged();" >
+			  <label class="custom-control-label" for="customRadioInline12">Mozilla's Readability</label>
+			</div>
+
+			<div class="custom-control custom-radio custom-control-inline">
+			  <input type="radio" id="customRadioInline22" name="customRadioInline12" class="custom-control-input" onchange="inputChanged();">
+			  <label class="custom-control-label" for="customRadioInline22">Jsoup Text Extracter</label>
+			</div>
+
+			<div class="custom-control custom-radio custom-control-inline" id="chromeHeadlessExtrcater" style="display: none;">
+			  <input type="radio" id="customRadioInline32" name="customRadioInline12" class="custom-control-input" onchange="inputChanged();">
+			  <label class="custom-control-label" for="customRadioInline32">Chrome headless Visible Text Extracter</label>
+			</div>	
+			<br><br>
+  		
+
+
+  		<form>
+  			<div class="form-group">
+  				<input type="text" class="form-control" id="urlInput" placeholder="URL..." style="background-color:#131316;color:white;border-radius:10px;">
+  			</div>
+  			<p style="text-align: center;">OR</p>
+  			<textarea class="form-control" id="srcInput" placeholder="Source..." style="background-color:#131316;
+  			color:white;border-radius:10px;height: 40px"></textarea>
+
+  		</form>
+  		<p align="center">
+  			<button class="btn btn-primary" style="margin: 4px" onclick="extractText('url');" id="url">Extract using url</button>
+  			<button class="btn btn-primary" style="margin: 4px" onclick="extractText('src');" id="src">Extract using src</button>
+  			
+  		</p>
+
+  		
+  		
+  		
+
+
+
+  		<div style="color:white;white-space:pre-wrap;" id="textExtracted">
+		</div>
+
+  	</div>
+    
+
+    <style>
+      ::-webkit-scrollbar {
+        width: 10px;
+        border-radius: 50px;
+
+        
+        background-blend-mode: darken;
+      }
+
+      /* Track */
+      ::-webkit-scrollbar-track {
+        background: #0b0b0c00;; 
+        border-radius: 10px;
+      }
+       
+      /* Handle */
+      ::-webkit-scrollbar-thumb {
+        background: red; 
+        border-radius: 10px;
+        background: rgb(102 95 95 / 30%);
+
+      }
+
+      /* Handle on hover */
+      ::-webkit-scrollbar-thumb:hover {
+        background: #007bff 
+      }
+
+      .form-control:focus {
+	      outline: none;
+	      box-shadow: none;
+	      }
+	      .loader {
+	      margin: 0 auto;
+	       /* Light grey */
+	      border-top: 3px solid #3498db; /* Blue */
+	      border-radius: 100%;
+	      width: 60px;
+	      height: 60px;
+	      animation: spin 1s linear infinite;
+	    }
+
+	    @keyframes spin {
+	      0% { transform: rotate(0deg); }
+	      100% { transform: rotate(360deg); }
+	    }
+	    .loaderSmall {
+	      margin: 0 auto;
+	      border: 2px solid #007bff; /* Light grey */
+	      border-top: 2px solid  white; /* Blue */
+	      border-radius: 50%;
+	      width: 28px;
+	      height: 28px;
+	      animation: spin 1s linear infinite;
+	    }
+
+
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  </body>
+</html>
+
