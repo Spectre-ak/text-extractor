@@ -85,7 +85,8 @@ public class HTMLExtracterController {
 	public String chromeHeadless(@RequestParam(value = "url",defaultValue = "")String url,
 			@RequestParam(value = "parser",defaultValue = "mozilla")String parser) {
 	   try {
-			HttpPost post = new HttpPost("http://ec2-3-237-19-65.compute-1.amazonaws.com:8080/chromeHeadless");
+		   	//URL of aws ec2 vm
+			HttpPost post = new HttpPost("http://---.compute-1.amazonaws.com:8080/chromeHeadless");
 
 			// add request parameter, form parameters
 			List<NameValuePair> urlParameters = new ArrayList<>();
