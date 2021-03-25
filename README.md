@@ -2,7 +2,7 @@
 
 Link: https://textextracter.azurewebsites.net/
 
-Web interface for extracting text content from HTML, websites using Jsoup, Selenium chrome headless, mozilla's readability
+Web interface for extracting text content from HTML, websites using Jsoup, Selenium chrome headless, mozilla's readability [->](https://github.com/mozilla/readability)
 
 ## Default:
 Default mode on the application extracts the page source(DOM) and then parses it in either Jsoup or readability then retrieves the readable contenet.[->](https://github.com/Spectre-ak/text-extracter/blob/1e2be572ffe50d0358f3d06d9c7578c1b1a3d980/textExtracter/src/main/java/com/example/textExtracter/HTMLExtracterController.java#L34)
