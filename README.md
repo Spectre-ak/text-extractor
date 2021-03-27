@@ -15,3 +15,7 @@ Used for parsing source and extracting text/source in application see[->](https:
 ## Chrome headless:
 Chrome headless is a way of using chrome browser without having an actual UI using Selenium and chrome web driver. 
 For this web application chrome headless runs on an AWS EC2 Windows instance (virtual machine). For reading and extracting contents from web pages spring rest controller is used which runs on the same instance using Tomcat as a jar file. [->](https://github.com/Spectre-ak/text-extracter/blob/1e2be572ffe50d0358f3d06d9c7578c1b1a3d980/textExtracter/src/main/java/com/example/textExtracter/HTMLExtracterController.java#L85)
+
+
+## Docker version
+Using selenium standalone-chrome docker image and remote driver in code.
