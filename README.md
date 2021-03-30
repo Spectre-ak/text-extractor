@@ -1,6 +1,6 @@
 # text-extracter
 
-Link: https://textextracter.azurewebsites.net/
+Link: https://textext.azurewebsites.net/
 
 Web interface for extracting text content from HTML, websites using Jsoup, Selenium chrome headless, mozilla's readability [->](https://github.com/mozilla/readability)
 
