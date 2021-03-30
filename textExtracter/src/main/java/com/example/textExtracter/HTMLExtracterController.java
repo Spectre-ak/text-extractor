@@ -84,30 +84,41 @@ public class HTMLExtracterController {
 	@PostMapping("/chromeHeadless")
 	public String chromeHeadless(@RequestParam(value = "url",defaultValue = "")String url,
 			@RequestParam(value = "parser",defaultValue = "mozilla")String parser) {
-	   try {
-		   	//URL of aws ec2 vm
-			HttpPost post = new HttpPost("http://---.compute-1.amazonaws.com:8080/chromeHeadless");
-
-			// add request parameter, form parameters
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("url", url));
-			urlParameters.add(new BasicNameValuePair("parser", parser));
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
+	  try {
 			
-			try (CloseableHttpClient httpClient = HttpClients.createDefault();
-					CloseableHttpResponse response = httpClient.execute(post)) {
-				String text=EntityUtils.toString(response.getEntity());
-				System.out.println("debufg1");
-				System.out.println(text);
-				
+			System.out.println("asd "+parser);
+			
+			ChromeOptions capabilities = new ChromeOptions();
+			  
+			 capabilities.addArguments("--no-sandbox");
+			 capabilities.addArguments("--disable-dev-shm-usage");
+			 capabilities.addArguments("--incognito");
+			 RemoteWebDriver driver = new RemoteWebDriver
+					 (new URL("http://headlesschromet.azurewebsites.net/wd/hub"),capabilities);
+			 
+			driver.get(url);
+			System.out.println(parser);
+			
+			if(parser.equals("headless")) {
+				//System.out.println(driver.findElement(By.tagName("html")).getText());
+				String text=driver.findElement(By.tagName("html")).getText();
+				driver.close();
 				return text;
 			}
-			
+			else if(parser.equals("jsoup")) {
+				String parsed=Jsoup.parse(driver.getPageSource()).wholeText();
+				return parsed;
+			}
+			else {
+				String srcString=driver.getPageSource();
+				driver.close();
+				return srcString;
+			}
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			return e.getMessage();
 		}
-		
 		
 	}
 	
