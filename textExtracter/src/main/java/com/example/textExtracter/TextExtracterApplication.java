@@ -11,14 +11,7 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 public class TextExtracterApplication {
 
 	public static void main(String[] args) {
-		System.setProperty("webdriver.gecko.driver", "geckodriver.exe");
-		FirefoxOptions options=new FirefoxOptions();
-		options.setHeadless(true);
-		WebDriver driver = new FirefoxDriver(options);
-		
-		driver.get("https://www.keycdn.com/blog/headless-browsers");
-		System.out.println(driver.findElement(By.tagName("html")).getText());
-		//SpringApplication.run(TextExtracterApplication.class, args);
+		SpringApplication.run(TextExtracterApplication.class, args);
 	}
 
 }
