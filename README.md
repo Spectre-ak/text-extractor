@@ -1,4 +1,4 @@
-# text-extracter
+# text-extractor
 
 Link: https://textext.azurewebsites.net/
 
