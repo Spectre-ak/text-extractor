@@ -107,6 +107,7 @@ public class HTMLExtracterController {
 			}
 			else if(parser.equals("jsoup")) {
 				String parsed=Jsoup.parse(driver.getPageSource()).wholeText();
+				driver.close();
 				return parsed;
 			}
 			else {
